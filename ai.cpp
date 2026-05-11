@@ -542,3 +542,130 @@ int main() {
     return 0;
 }
 
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// A* for 8 puzzle
+#include <iostream>
+#include <queue>
+#include <vector>
+using namespace std;
+
+struct Node {
+    vector<vector<int>> mat;
+    int x, y;
+    int g, h;
+};
+
+// Compare f = g + h
+struct compare {
+    bool operator()(Node a, Node b) {
+        return (a.g + a.h) > (b.g + b.h);
+    }
+};
+
+// Goal State
+vector<vector<int>> goal = {
+    {1,2,3},
+    {4,5,6},
+    {7,8,0}
+};
+
+// Count misplaced tiles
+int heuristic(vector<vector<int>> mat) {
+
+    int count = 0;
+
+    for(int i=0;i<3;i++) {
+        for(int j=0;j<3;j++) {
+
+            if(mat[i][j] != 0 &&
+               mat[i][j] != goal[i][j]) {
+                count++;
+            }
+        }
+    }
+
+    return count;
+}
+
+// Print puzzle
+void print(vector<vector<int>> mat) {
+
+    for(int i=0;i<3;i++) {
+        for(int j=0;j<3;j++) {
+            cout << mat[i][j] << " ";
+        }
+        cout << endl;
+    }
+
+    cout << "------" << endl;
+}
+
+int main() {
+
+    vector<vector<int>> start = {
+        {1,2,3},
+        {4,0,6},
+        {7,5,8}
+    };
+
+    priority_queue<Node, vector<Node>, compare> pq;
+
+    int x, y;
+
+    // Find blank space
+    for(int i=0;i<3;i++) {
+        for(int j=0;j<3;j++) {
+
+            if(start[i][j] == 0) {
+                x = i;
+                y = j;
+            }
+        }
+    }
+
+    // Push start node
+    pq.push({start, x, y, 0, heuristic(start)});
+
+    int dx[] = {-1,1,0,0};
+    int dy[] = {0,0,-1,1};
+
+    while(!pq.empty()) {
+
+        Node curr = pq.top();
+        pq.pop();
+
+        print(curr.mat);
+
+        // Goal check
+        if(curr.h == 0) {
+            cout << "Goal Reached";
+            break;
+        }
+
+        // Move blank space
+        for(int k=0;k<4;k++) {
+
+            int nx = curr.x + dx[k];
+            int ny = curr.y + dy[k];
+
+            if(nx>=0 && nx<3 && ny>=0 && ny<3) {
+
+                vector<vector<int>> temp = curr.mat;
+
+                swap(temp[curr.x][curr.y],
+                     temp[nx][ny]);
+
+                pq.push({
+                    temp,
+                    nx,
+                    ny,
+                    curr.g + 1,
+                    heuristic(temp)
+                });
+            }
+        }
+    }
+
+    return 0;
+}
+
